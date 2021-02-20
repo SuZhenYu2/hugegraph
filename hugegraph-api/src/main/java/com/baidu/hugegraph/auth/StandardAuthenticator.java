@@ -48,12 +48,12 @@ public class StandardAuthenticator implements HugeAuthenticator {
         String caller = Thread.currentThread().getName();
         E.checkState(caller.equals("main"), "Invalid caller '%s'", caller);
 
-        UserManager userManager = this.graph().hugegraph().userManager();
-        if (userManager.findUser(HugeAuthenticator.USER_ADMIN) == null) {
+        AuthManager authManager = this.graph().hugegraph().authManager();
+        if (authManager.findUser(HugeAuthenticator.USER_ADMIN) == null) {
             HugeUser admin = new HugeUser(HugeAuthenticator.USER_ADMIN);
             admin.password(StringEncoding.hashPassword(inputPassword()));
             admin.creator(HugeAuthenticator.USER_SYSTEM);
-            userManager.createUser(admin);
+            authManager.createUser(admin);
         }
 
         this.graph.close();
@@ -84,7 +84,7 @@ public class StandardAuthenticator implements HugeAuthenticator {
         String remoteUrl = config.get(ServerOptions.AUTH_REMOTE_URL);
         if (StringUtils.isNotEmpty(remoteUrl)) {
             RpcClientProvider provider = new RpcClientProvider(config);
-            this.graph.switchUserManager(provider.userManager());
+            this.graph.switchAuthManager(provider.authManager());
         }
     }
 
@@ -101,7 +101,7 @@ public class StandardAuthenticator implements HugeAuthenticator {
         E.checkArgumentNotNull(password,
                                "The password parameter can't be null");
 
-        RolePermission role = this.graph().userManager().loginUser(username,
+        RolePermission role = this.graph().authManager().loginUser(username,
                                                                    password);
         if (role == null) {
             role = ROLE_NONE;
@@ -112,8 +112,8 @@ public class StandardAuthenticator implements HugeAuthenticator {
     }
 
     @Override
-    public UserManager userManager() {
-        return this.graph().userManager();
+    public AuthManager authManager() {
+        return this.graph().authManager();
     }
 
     @Override
